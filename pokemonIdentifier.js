@@ -7,7 +7,10 @@ const pokemonDir = path.join(__dirname, 'pokemon');
 
 async function loadAndResizeImage(imagePath) {
     try {
-        const image = await sharp(imagePath).resize(70, 70).raw().toBuffer();
+        const image = await sharp(imagePath)
+            .resize(70, 70, { fit: 'inside' })
+            .raw()
+            .toBuffer();
         return { data: image, width: 70, height: 70 };
     } catch (error) {
         console.error(`Error loading image ${imagePath}:`, error.message);
@@ -16,12 +19,12 @@ async function loadAndResizeImage(imagePath) {
 }
 
 function calculateSimilarity(imageData1, imageData2, width, height) {
-    const diffPixels = pixelmatch(imageData1, imageData2, null, width, height, { threshold: 0.1 });
+    const diffPixels = pixelmatch(imageData1, imageData2, null, width, height, { threshold: 0.15 });
     return 1 - diffPixels / (width * height);
 }
 
 function getNameWithoutSuffix(filename) {
-    return filename.replace(/_[^_]+\.png$/, '');
+    return filename.replace(/(_[^_]+)?\.png$/, '');
 }
 
 async function identifyPokemon(targetImagePath) {
@@ -33,21 +36,28 @@ async function identifyPokemon(targetImagePath) {
     let closestMatch = { name: null, similarity: 0 };
 
     const files = fs.readdirSync(pokemonDir).filter(file => file.endsWith(".png"));
-
-    await Promise.all(files.map(async (filename) => {
+    const tasks = files.map(async (filename) => {
         const imgPath = path.join(pokemonDir, filename);
         const pokemonImage = await loadAndResizeImage(imgPath);
 
         if (pokemonImage) {
             const similarity = calculateSimilarity(targetImage.data, pokemonImage.data, targetImage.width, targetImage.height);
 
-            if (similarity > closestMatch.similarity) {
-                closestMatch = { name: getNameWithoutSuffix(filename), similarity };
+            if (similarity > 0) {
+                if (similarity > closestMatch.similarity) {
+                    closestMatch = { name: getNameWithoutSuffix(filename), similarity };
+                }
             }
         } else {
             console.warn(`Skipping unreadable image: ${filename}`);
         }
-    }));
+    });
+
+    await Promise.all(tasks);
+
+    if (!closestMatch.name) {
+        console.warn('No sufficiently similar Pokémon found.');
+    }
 
     return closestMatch;
 }
