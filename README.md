@@ -12,7 +12,7 @@
 ## Requirements
 
 - Node.js (v20.15.1 or higher)
-- Discord account with selfbot access
+- Discord account token
 
 ## Installation
 
