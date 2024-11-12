@@ -37,10 +37,10 @@
 
 ## Usage
 
-Once the selfbot is running, it will listen for Pokémon spawns in any server you are part of and automatically perform the following actions:
+Once the selfbot is running, it will listen for Pokémon spawns in any server you are part of and you may perform the following actions:
 
 - **Catching Pokémon**:
-  - When a Pokémon spawns, the bot automatically identifies its name and uses the `xcatch` command to catch it.
+  - When a Pokémon spawns, the bot automatically identifies its name and you can use the `xcatch` command to catch it.
   - Example:
     ```
     xcatch
